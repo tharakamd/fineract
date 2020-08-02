@@ -25,6 +25,12 @@ buildDir = new File(rootProject.projectDir, "../build")
 
 repositories {
     jcenter()
+    maven {
+        url "http://nexus.pentaho.org/content/repositories/pentaho-public-release-repos/"
+    }
+    maven {
+        url "http://nexus.pentaho.org/content/repositories/omni/"
+    }
     mavenCentral()
 }
 
@@ -353,6 +359,7 @@ rat {
         // Git build info
         "**/git.properties",
     ]
+    failOnError.set(false)
 }
 
 configurations {
@@ -787,6 +794,18 @@ task setBlankPassword {
         def sql = Sql.newInstance( 'jdbc:mysql:thin://localhost:3306/', mysqlUser, mysqlPassword, 'org.drizzle.jdbc.DrizzleDriver' )
         sql.execute('USE `fineract_tenants`')
         sql.execute('UPDATE fineract_tenants.tenants SET schema_server = \'localhost\', schema_server_port = \'3306\', schema_username = \'mifos\', schema_password = \'mysql\' WHERE id=1;')
+    }
+}
+
+task deployPentahoReports() {
+    def pentahoReportDir = System.properties['user.home'] + System.properties['file.separator'] + '.mifosx' + System.properties['file.separator'] + 'pentahoReports'
+    copy {
+        from "src/main/pentahoReports"
+        into pentahoReportDir
+    }
+
+    doLast {
+        println ':deployPentahoReports - moving pentaho reports under: ' + pentahoReportDir
     }
 }
 
