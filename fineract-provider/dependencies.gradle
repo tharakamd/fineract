@@ -28,6 +28,7 @@ dependencies {
 
     // implementation dependencies are directly used (compiled against) in src/main (and src/test)
     //
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
     implementation(
             //'ch.vorburger.mariaDB4j:mariaDB4j:2.4.0',
 
