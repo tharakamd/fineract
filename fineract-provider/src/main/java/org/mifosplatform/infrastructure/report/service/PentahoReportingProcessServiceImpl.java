@@ -193,8 +193,7 @@ public class PentahoReportingProcessServiceImpl implements ReportingProcessServi
             final Connection connection = this.dataSource.getConnection();
             String tenantUrl;
             try {
-                // tenantUrl = connection.getMetaData().getURL();
-                tenantUrl = "jdbc:mysql://localhost:3306/fineract_default";
+                tenantUrl = connection.getMetaData().getURL();
             } finally {
                 connection.close();
             }
