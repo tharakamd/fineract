@@ -48,20 +48,21 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.spring.gradle:dependency-management-plugin:1.0.9.RELEASE'
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.10.RELEASE'
         classpath 'com.bmuschko:gradle-cargo-plugin:2.7.1'
         classpath 'org.zeroturnaround:gradle-jrebel-plugin:1.1.10'
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.3.2.RELEASE'
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.3.3.RELEASE'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0'
         classpath 'org.apache.openjpa:openjpa:3.1.2' // when upgrading, also change OpenJPA version repeated below in dependencyManagement!
         classpath 'com.radcortez.gradle:openjpa-gradle-plugin:3.1.0'
         classpath 'org.nosphere.apache:creadur-rat-gradle:0.7.0'
-        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.4.5"
+        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.5.0"
         classpath "gradle.plugin.com.github.andygoossens:gradle-modernizer-plugin:1.3.0"
         classpath "gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:2.2.3"
         classpath "net.ltgt.gradle:gradle-errorprone-plugin:1.2.1"
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:5.1.0"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:5.1.1"
         classpath "io.swagger.core.v3:swagger-gradle-plugin:2.1.4"
+        classpath "gradle.plugin.org.hidetake:gradle-swagger-generator-plugin:2.18.2"
     }
 }
 
@@ -85,6 +86,7 @@ apply plugin: "com.gorylenko.gradle-git-properties"
 apply plugin: "net.ltgt.errorprone"
 apply plugin: "com.diffplug.spotless"
 apply plugin: "io.swagger.core.v3.swagger-gradle-plugin"
+apply plugin: "org.hidetake.swagger.generator"
 
 dependencyManagement {
     imports {
@@ -108,7 +110,7 @@ dependencyManagement {
         dependency 'org.drizzle.jdbc:drizzle-jdbc:1.4'
         dependency 'com.github.librepdf:openpdf:1.3.20'
         dependency 'org.mnode.ical4j:ical4j:3.0.19'
-        dependency 'org.flywaydb:flyway-core:6.5.3'
+        dependency 'org.flywaydb:flyway-core:6.5.5'
         dependency 'org.quartz-scheduler:quartz:2.3.2'
         dependency 'com.amazonaws:aws-java-sdk-s3:1.11.832'
         dependency 'org.ehcache:ehcache:3.8.1'
@@ -123,14 +125,14 @@ dependencyManagement {
         dependency 'jakarta.validation:jakarta.validation-api:3.0.0'
         dependency 'org.apache.activemq:activemq-broker:5.16.0'
         dependency 'org.apache.bval:org.apache.bval.bundle:2.0.4'
-        dependency 'org.mockito:mockito-core:3.4.6'
-        dependency 'org.mockito:mockito-junit-jupiter:3.4.6'
+        dependency 'org.mockito:mockito-core:3.5.2'
+        dependency 'org.mockito:mockito-junit-jupiter:3.5.2'
         dependency 'io.github.classgraph:classgraph:4.8.87'
         dependency 'org.awaitility:awaitility:4.0.3'
-        dependency 'com.github.spotbugs:spotbugs-annotations:4.1.1'
+        dependency 'com.github.spotbugs:spotbugs-annotations:4.1.2'
         dependency 'javax.cache:cache-api:1.1.1'
         dependency 'org.mock-server:mockserver-junit-jupiter:5.11.0'
-        dependency 'org.webjars.npm:swagger-ui-dist:3.31.1'
+        dependency 'org.webjars.npm:swagger-ui-dist:3.32.3'
         dependency 'org.webjars:webjars-locator-core:0.46'
 
         dependency ('org.dom4j:dom4j:2.1.3') {
@@ -199,6 +201,20 @@ openjpa {
 
 // Configuration for Swagger documentation generation task
 // https://github.com/swagger-api/swagger-core/tree/master/modules/swagger-gradle-plugin
+import org.apache.tools.ant.filters.ReplaceTokens
+
+task prepareInputYaml(dependsOn: 'generateGitProperties') {
+    doLast {
+        copy {
+            from file('config/swagger/fineract-input.yaml.template')
+            into file('config/swagger')
+            rename { String filename -> return 'fineract-input.yaml' }
+            filter(ReplaceTokens, tokens: [VERSION: project.ext.gitProps['git.commit.id.describe']])
+        }
+    }
+}
+
+
 resolve {
     logging.captureStandardOutput LogLevel.INFO
     outputFileName = 'fineract'
@@ -208,6 +224,8 @@ resolve {
     outputDir = file("${buildDir}/classes/java/main/static/swagger-ui")
     openApiFile = file("config/swagger/fineract-input.yaml")
 }
+
+resolve.dependsOn prepareInputYaml
 
 // Configuration for JaCoCo code coverage task
 // https://www.eclemma.org/jacoco/
@@ -294,6 +312,7 @@ rat {
         '**/*.github/**',
         '**/MANIFEST.MF',
         '**/*.json',
+        '**/*.json.template',
         '**/*.txt',
         '**/*.log',
         '**/fineractdev-eclipse-preferences.epf',
@@ -863,7 +882,37 @@ gitProperties {
     dateFormat = "yyyy-MM-dd'T'HH:mmZ"
     dateFormatTimeZone = "GMT"
     failOnNoGitDirectory = false
+    extProperty = 'gitProps'
 }
 
 // make sure the generateGitProperties task always executes (even when git.properties is not changed)
 generateGitProperties.outputs.upToDateWhen { false }
+
+// This is for swagger code generation
+// https://github.com/int128/gradle-swagger-generator-plugin
+dependencies {
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen-cli:3.0.18'
+}
+
+task prepareConfigJson(dependsOn: 'generateGitProperties') {
+    doLast {
+        copy {
+            from file('config/swagger/config.json.template')
+            into file('config/swagger')
+            rename { String filename -> return 'config.json' }
+            filter(ReplaceTokens, tokens: [VERSION: project.ext.gitProps['git.commit.id.describe']])
+        }
+    }
+}
+
+swaggerSources {
+    fineract {
+        inputFile = file('../build/classes/java/main/static/swagger-ui/fineract.yaml')
+        code {
+            language = 'java'
+            configFile = file('config/swagger/config.json')
+        }
+    }
+}
+
+generateSwaggerCodeFineract.dependsOn prepareConfigJson
