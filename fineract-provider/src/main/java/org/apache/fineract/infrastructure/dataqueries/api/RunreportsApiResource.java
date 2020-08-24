@@ -143,6 +143,8 @@ public class RunreportsApiResource {
             final ResponseBuilder response = Response.ok(file);
             response.header("Content-Disposition", "attachment; filename=\"" + pdfFileName + "\"");
             response.header("content-Type", "application/pdf");
+            response.header("X-Frame-Options", "ALLOW-FROM https://localhost:8443");
+            // servletResponse.setHeader("X-Frame-Options", "ALLOW-FROM https://localhost:8443");
 
             return response.build();
 
