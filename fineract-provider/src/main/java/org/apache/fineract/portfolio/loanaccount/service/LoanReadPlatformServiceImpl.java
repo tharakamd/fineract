@@ -1497,7 +1497,7 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService {
         sqlBuilder.append("select ").append(rm.schema()).append(" where DATE_SUB(CURDATE(),INTERVAL ? DAY) > ls.duedate ")
                 .append(" and ls.completed_derived <> 1 and mc.charge_applies_to_enum =1 ")
                 .append(" and ls.recalculated_interest_component <> 1 ")
-                .append(" and mc.charge_time_enum = 9 and ml.loan_status_id = 300 ");
+                .append(" and mc.charge_time_enum in (9,17) and ml.loan_status_id = 300 ");
 
         if (backdatePenalties) {
             return this.jdbcTemplate.query(sqlBuilder.toString(), rm, new Object[] { penaltyWaitPeriod });

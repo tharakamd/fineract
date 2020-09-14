@@ -306,6 +306,9 @@ public class LoanCharge extends AbstractPersistableCustom {
                 this.amountWaived = null;
                 this.amountWrittenOff = null;
             break;
+            case PERCENT_OF_OUTSTANDING_BALANCE:
+                // todo :: fix this : tharaka
+                System.out.printf("");
         }
         this.amountOrPercentage = chargeAmount;
         if (this.loan != null && isInstalmentFee()) {
@@ -410,6 +413,8 @@ public class LoanCharge extends AbstractPersistableCustom {
                     }
                     this.amount = minimumAndMaximumCap(loanCharge);
                 break;
+                case PERCENT_OF_OUTSTANDING_BALANCE:
+                    System.out.println("unhandled case"); // todo :: fix this : tharaka
             }
             this.amountOrPercentage = amount;
             this.amountOutstanding = calculateOutstanding();
@@ -507,6 +512,8 @@ public class LoanCharge extends AbstractPersistableCustom {
                     this.amount = minimumAndMaximumCap(loanCharge);
                     this.amountOutstanding = calculateOutstanding();
                 break;
+                case PERCENT_OF_OUTSTANDING_BALANCE:
+                    System.out.println("unhandle case"); // todo :: fix me: tharaka
             }
             this.amountOrPercentage = newValue;
             if (isInstalmentFee()) {

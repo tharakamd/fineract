@@ -60,6 +60,7 @@ public final class ChargesHelper {
     private static final Integer SHARE_REDEEM = 15;
 
     private static final Integer CHARGE_SAVINGS_NO_ACTIVITY_FEE = 16;
+    private static final Integer CHARGE_OVERDUE_ON_MATURITY = 17;
 
     private static final Integer CHARGE_CLIENT_SPECIFIED_DUE_DATE = 1;
 

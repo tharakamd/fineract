@@ -303,6 +303,8 @@ public class SavingsAccountCharge extends AbstractPersistableCustom {
                 this.amountWaived = null;
                 this.amountWrittenOff = null;
             break;
+            case PERCENT_OF_OUTSTANDING_BALANCE:
+                System.out.println("unhandled case"); // todo :: fix me : tharaka
         }
     }
 
@@ -434,6 +436,8 @@ public class SavingsAccountCharge extends AbstractPersistableCustom {
                 case PERCENT_OF_DISBURSEMENT_AMOUNT:
                     LOG.error("TODO Implement update ChargeCalculationType for PERCENT_OF_DISBURSEMENT_AMOUNT");
                 break;
+                case PERCENT_OF_OUTSTANDING_BALANCE:
+                    System.out.println("unhandled case"); // todo:: fix me : tharaka
             }
         }
     }
@@ -510,6 +514,8 @@ public class SavingsAccountCharge extends AbstractPersistableCustom {
                 case PERCENT_OF_DISBURSEMENT_AMOUNT:
                     LOG.error("TODO Implement update ChargeCalculationType for PERCENT_OF_DISBURSEMENT_AMOUNT");
                 break;
+                case PERCENT_OF_OUTSTANDING_BALANCE:
+                    System.out.println("unhaldled case"); // todo :: fix me : tharaka
             }
         }
 

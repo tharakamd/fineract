@@ -25,7 +25,8 @@ public enum ChargeCalculationType {
     PERCENT_OF_AMOUNT(2, "chargeCalculationType.percent.of.amount"), //
     PERCENT_OF_AMOUNT_AND_INTEREST(3, "chargeCalculationType.percent.of.amount.and.interest"), //
     PERCENT_OF_INTEREST(4, "chargeCalculationType.percent.of.interest"), PERCENT_OF_DISBURSEMENT_AMOUNT(5,
-            "chargeCalculationType.percent.of.disbursement.amount");
+            "chargeCalculationType.percent.of.disbursement.amount"), PERCENT_OF_OUTSTANDING_BALANCE(6,
+                    "chargeCalculationType.percent.of.outstanding.balance");
 
     private final Integer value;
     private final String code;
@@ -46,7 +47,8 @@ public enum ChargeCalculationType {
     public static Object[] validValuesForLoan() {
         return new Integer[] { ChargeCalculationType.FLAT.getValue(), ChargeCalculationType.PERCENT_OF_AMOUNT.getValue(),
                 ChargeCalculationType.PERCENT_OF_AMOUNT_AND_INTEREST.getValue(), ChargeCalculationType.PERCENT_OF_INTEREST.getValue(),
-                ChargeCalculationType.PERCENT_OF_DISBURSEMENT_AMOUNT.getValue() };
+                ChargeCalculationType.PERCENT_OF_DISBURSEMENT_AMOUNT.getValue(),
+                ChargeCalculationType.PERCENT_OF_OUTSTANDING_BALANCE.getValue() };
     }
 
     public static Object[] validValuesForSavings() {
@@ -86,6 +88,9 @@ public enum ChargeCalculationType {
             break;
             case 5:
                 chargeCalculationType = PERCENT_OF_DISBURSEMENT_AMOUNT;
+            break;
+            case 6:
+                chargeCalculationType = PERCENT_OF_OUTSTANDING_BALANCE;
             break;
         }
         return chargeCalculationType;
