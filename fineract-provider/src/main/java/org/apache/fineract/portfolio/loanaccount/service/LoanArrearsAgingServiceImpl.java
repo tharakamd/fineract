@@ -21,6 +21,9 @@ package org.apache.fineract.portfolio.loanaccount.service;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +36,7 @@ import org.apache.fineract.infrastructure.jobs.annotation.CronTarget;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.portfolio.common.BusinessEventNotificationConstants.BusinessEntity;
 import org.apache.fineract.portfolio.common.BusinessEventNotificationConstants.BusinessEvents;
-import org.apache.fineract.portfolio.common.service.BusinessEventListner;
+import org.apache.fineract.portfolio.common.service.BusinessEventListener;
 import org.apache.fineract.portfolio.common.service.BusinessEventNotifierService;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanCharge;
@@ -41,9 +44,6 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanRepaymentScheduleIns
 import org.apache.fineract.portfolio.loanaccount.domain.LoanSummary;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.data.LoanSchedulePeriodData;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,11 +54,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, BusinessEventListner {
+public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, BusinessEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoanArrearsAgingServiceImpl.class);
     private final BusinessEventNotifierService businessEventNotifierService;
-    private final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -70,17 +70,17 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, Bus
 
     @PostConstruct
     public void registerForNotification() {
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_REFUND, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_ADJUST_TRANSACTION, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_MAKE_REPAYMENT, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_UNDO_WRITTEN_OFF, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_WAIVE_INTEREST, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_ADD_CHARGE, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_WAIVE_CHARGE, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_CHARGE_PAYMENT, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_APPLY_OVERDUE_CHARGE, this);
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_DISBURSAL, new DisbursementEventListner());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_FORECLOSURE, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_REFUND, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_ADJUST_TRANSACTION, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_MAKE_REPAYMENT, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_UNDO_WRITTEN_OFF, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_WAIVE_INTEREST, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_ADD_CHARGE, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_WAIVE_CHARGE, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_CHARGE_PAYMENT, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_APPLY_OVERDUE_CHARGE, this);
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_DISBURSAL, new DisbursementEventListener());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_FORECLOSURE, this);
     }
 
     @Transactional
@@ -170,9 +170,9 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, Bus
         BigDecimal interestOverdue = BigDecimal.ZERO;
         BigDecimal feeOverdue = BigDecimal.ZERO;
         BigDecimal penaltyOverdue = BigDecimal.ZERO;
-        LocalDate overDueSince = LocalDate.now();
+        LocalDate overDueSince = LocalDate.now(ZoneId.systemDefault());
         for (LoanRepaymentScheduleInstallment installment : installments) {
-            if (installment.getDueDate().isBefore(LocalDate.now())) {
+            if (installment.getDueDate().isBefore(LocalDate.now(ZoneId.systemDefault()))) {
                 principalOverdue = principalOverdue.add(installment.getPrincipalOutstanding(loan.getCurrency()).getAmount());
                 interestOverdue = interestOverdue.add(installment.getInterestOutstanding(loan.getCurrency()).getAmount());
                 feeOverdue = feeOverdue.add(installment.getFeeChargesOutstanding(loan.getCurrency()).getAmount());
@@ -265,7 +265,7 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, Bus
             BigDecimal interestOverdue = BigDecimal.ZERO;
             BigDecimal feeOverdue = BigDecimal.ZERO;
             BigDecimal penaltyOverdue = BigDecimal.ZERO;
-            LocalDate overDueSince = LocalDate.now();
+            LocalDate overDueSince = LocalDate.now(ZoneId.systemDefault());
 
             for (LoanSchedulePeriodData loanSchedulePeriodData : entry.getValue()) {
                 if (!loanSchedulePeriodData.getComplete()) {
@@ -309,7 +309,7 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, Bus
         insertStatementBuilder.append(penaltyOverdue).append(",");
         BigDecimal totalOverDue = principalOverdue.add(interestOverdue).add(feeOverdue).add(penaltyOverdue);
         insertStatementBuilder.append(totalOverDue).append(",'");
-        insertStatementBuilder.append(this.formatter.print(overDueSince)).append("')");
+        insertStatementBuilder.append(this.formatter.format(overDueSince)).append("')");
         return insertStatementBuilder.toString();
     }
 
@@ -323,7 +323,7 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, Bus
         insertStatementBuilder.append(penaltyOverdue).append(", mla.total_overdue_derived=");
         BigDecimal totalOverDue = principalOverdue.add(interestOverdue).add(feeOverdue).add(penaltyOverdue);
         insertStatementBuilder.append(totalOverDue).append(",mla.overdue_since_date_derived= '");
-        insertStatementBuilder.append(this.formatter.print(overDueSince)).append("' ");
+        insertStatementBuilder.append(this.formatter.format(overDueSince)).append("' ");
         insertStatementBuilder.append("WHERE  mla.loan_id=").append(loanId);
         return insertStatementBuilder.toString();
     }
@@ -503,7 +503,7 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService, Bus
         }
     }
 
-    private class DisbursementEventListner implements BusinessEventListner {
+    private class DisbursementEventListener implements BusinessEventListener {
 
         @SuppressWarnings("unused")
         @Override

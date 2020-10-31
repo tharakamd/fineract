@@ -21,6 +21,7 @@ package org.apache.fineract.infrastructure.campaigns.sms.service;
 
 import java.io.IOException;
 import java.security.InvalidParameterException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.common.BusinessEventNotificationConstants;
 import org.apache.fineract.portfolio.common.BusinessEventNotificationConstants.BusinessEntity;
 import org.apache.fineract.portfolio.common.BusinessEventNotificationConstants.BusinessEvents;
-import org.apache.fineract.portfolio.common.service.BusinessEventListner;
+import org.apache.fineract.portfolio.common.service.BusinessEventListener;
 import org.apache.fineract.portfolio.common.service.BusinessEventNotifierService;
 import org.apache.fineract.portfolio.group.domain.Group;
 import org.apache.fineract.portfolio.group.domain.GroupRepository;
@@ -54,8 +55,6 @@ import org.apache.fineract.portfolio.savings.domain.SavingsAccount;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountTransaction;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,18 +93,19 @@ public class SmsCampaignDomainServiceImpl implements SmsCampaignDomainService {
     }
 
     @PostConstruct
-    public void addListners() {
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_APPROVED, new SendSmsOnLoanApproved());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_REJECTED, new SendSmsOnLoanRejected());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.LOAN_MAKE_REPAYMENT, new SendSmsOnLoanRepayment());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.CLIENTS_ACTIVATE, new ClientActivatedListener());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.CLIENTS_REJECT, new ClientRejectedListener());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.SAVINGS_ACTIVATE,
+    public void addListeners() {
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_APPROVED, new SendSmsOnLoanApproved());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_REJECTED, new SendSmsOnLoanRejected());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.LOAN_MAKE_REPAYMENT, new SendSmsOnLoanRepayment());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.CLIENTS_ACTIVATE, new ClientActivatedListener());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.CLIENTS_REJECT, new ClientRejectedListener());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.SAVINGS_ACTIVATE,
                 new SavingsAccountActivatedListener());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.SAVINGS_REJECT, new SavingsAccountRejectedListener());
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.SAVINGS_DEPOSIT,
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.SAVINGS_REJECT,
+                new SavingsAccountRejectedListener());
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.SAVINGS_DEPOSIT,
                 new SavingsAccountTransactionListener(true));
-        this.businessEventNotifierService.addBusinessEventPostListners(BusinessEvents.SAVINGS_WITHDRAWAL,
+        this.businessEventNotifierService.addBusinessEventPostListeners(BusinessEvents.SAVINGS_WITHDRAWAL,
                 new SavingsAccountTransactionListener(false));
     }
 
@@ -311,8 +311,8 @@ public class SmsCampaignDomainServiceImpl implements SmsCampaignDomainService {
             throw new InvalidParameterException("");
         }
 
-        DateTimeFormatter timeFormatter = DateTimeFormat.forPattern("HH:mm");
-        DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("MMM:d:yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM:d:yyyy");
 
         smsParams.put("id", loanTransaction.getLoan().getClientId());
         smsParams.put("firstname", client.getFirstname());
@@ -333,8 +333,8 @@ public class SmsCampaignDomainServiceImpl implements SmsCampaignDomainService {
         }
 
         smsParams.put("repaymentAmount", loanTransaction.getAmount(loan.getCurrency()));
-        smsParams.put("RepaymentDate", loanTransaction.getCreatedDateTime().toLocalDate().toString(dateFormatter));
-        smsParams.put("RepaymentTime", loanTransaction.getCreatedDateTime().toLocalTime().toString(timeFormatter));
+        smsParams.put("RepaymentDate", loanTransaction.getCreatedDateTime().toLocalDate().format(dateFormatter));
+        smsParams.put("RepaymentTime", loanTransaction.getCreatedDateTime().toLocalTime().format(timeFormatter));
 
         if (loanTransaction.getPaymentDetail() != null) {
             smsParams.put("receiptNumber", loanTransaction.getPaymentDetail().getReceiptNumber());
@@ -354,7 +354,7 @@ public class SmsCampaignDomainServiceImpl implements SmsCampaignDomainService {
         // transactionDate
         HashMap<String, Object> smsParams = new HashMap<String, Object>();
         SavingsAccount savingsAccount = savingsAccountTransaction.getSavingsAccount();
-        DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("MMM:d:yyyy");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM:d:yyyy");
         smsParams.put("clientId", client.getId());
         smsParams.put("firstname", client.getFirstname());
         smsParams.put("middlename", client.getMiddlename());
@@ -367,7 +367,7 @@ public class SmsCampaignDomainServiceImpl implements SmsCampaignDomainService {
         smsParams.put("depositAmount", savingsAccountTransaction.getAmount(savingsAccount.getCurrency()));
         smsParams.put("balance", savingsAccount.getWithdrawableBalance());
         smsParams.put("officeId", client.getOffice().getId());
-        smsParams.put("transactionDate", savingsAccountTransaction.getTransactionLocalDate().toString(dateFormatter));
+        smsParams.put("transactionDate", savingsAccountTransaction.getTransactionLocalDate().format(dateFormatter));
         smsParams.put("savingsTransactionId", savingsAccountTransaction.getId());
 
         if (client.getStaff() != null) {
@@ -384,7 +384,7 @@ public class SmsCampaignDomainServiceImpl implements SmsCampaignDomainService {
         return smsParams;
     }
 
-    private abstract static class SmsBusinessEventAdapter implements BusinessEventListner {
+    private abstract static class SmsBusinessEventAdapter implements BusinessEventListener {
 
         @Override
         public void businessEventToBeExecuted(Map<BusinessEntity, Object> businessEventEntity) {

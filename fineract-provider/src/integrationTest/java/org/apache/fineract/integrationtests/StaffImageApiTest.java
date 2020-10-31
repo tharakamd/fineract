@@ -32,10 +32,12 @@ import org.apache.fineract.integrationtests.common.organisation.StaffHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Deprecated // replaced by new ImageTest, can be deleted as FINERACT-1209 is fully implemented
 public class StaffImageApiTest {
 
     private RequestSpecification requestSpec;
     private ResponseSpecification responseSpec;
+    private ResponseSpecification responseSpec404;
 
     @BeforeEach
     public void setup() {
@@ -43,6 +45,7 @@ public class StaffImageApiTest {
         this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
         this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
+        this.responseSpec404 = new ResponseSpecBuilder().expectStatusCode(404).build();
     }
 
     @Test
@@ -57,6 +60,7 @@ public class StaffImageApiTest {
         Integer staffId = StaffHelper.createStaff(this.requestSpec, this.responseSpec);
         Integer imageId = ImageHelper.createImageForStaff(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageId, "Image id should not be null");
+
         String imageAsText = ImageHelper.getStaffImageAsText(this.requestSpec, this.responseSpec, staffId);
         assertNotNull("Image id should not be null", imageAsText);
         assertEquals(ImageHelper.generateImageAsText(), imageAsText);
@@ -67,6 +71,7 @@ public class StaffImageApiTest {
         Integer staffId = StaffHelper.createStaff(this.requestSpec, this.responseSpec);
         Integer imageId = ImageHelper.createImageForStaff(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageId, "Image id should not be null");
+
         byte[] imageAsBytes = ImageHelper.getStaffImageAsBinary(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageAsBytes, "Image content should not be null");
         assertEquals(251, imageAsBytes.length);
@@ -77,6 +82,7 @@ public class StaffImageApiTest {
         Integer staffId = StaffHelper.createStaff(this.requestSpec, this.responseSpec);
         Integer imageId = ImageHelper.createImageForStaff(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageId, "Image id should not be null");
+
         imageId = ImageHelper.updateImageForStaff(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageId, "Image id should not be null");
     }
@@ -86,7 +92,11 @@ public class StaffImageApiTest {
         Integer staffId = StaffHelper.createStaff(this.requestSpec, this.responseSpec);
         Integer imageId = ImageHelper.createImageForStaff(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageId, "Image id should not be null");
+
         imageId = ImageHelper.deleteStaffImage(this.requestSpec, this.responseSpec, staffId);
         assertNotNull(imageId, "Image id should not be null");
+
+        ImageHelper.getStaffImageAsBinary(this.requestSpec, this.responseSpec404, staffId);
+        // No additional Assertion required, the point is the responseSpec404
     }
 }

@@ -20,7 +20,7 @@ dependencies {
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 
     spotbugsPlugins "jp.skypencil.findbugs.slf4j:bug-pattern:1.5.0@jar"
-    spotbugs 'com.github.spotbugs:spotbugs:4.1.2'
+    spotbugs 'com.github.spotbugs:spotbugs:4.1.4'
 
     // Never use "compile" scope, but make all dependencies either 'implementation', 'runtimeOnly' or 'testCompile'.
     // Note that we never use 'api', because Fineract at least currently is a simple monolithic application ("WAR"), not a library.
@@ -28,7 +28,6 @@ dependencies {
 
     // implementation dependencies are directly used (compiled against) in src/main (and src/test)
     //
-    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.49'
     implementation(
             //'ch.vorburger.mariaDB4j:mariaDB4j:2.4.0',
 
@@ -46,7 +45,6 @@ dependencies {
             'com.sun.jersey.contribs:jersey-spring',
             'com.sun.jersey.contribs:jersey-multipart',
 
-            'joda-time:joda-time',
             'com.google.guava:guava',
             'com.google.code.gson:gson',
             'com.sun.jersey:jersey-core',
@@ -82,6 +80,7 @@ dependencies {
             'com.github.spotbugs:spotbugs-annotations',
             'io.swagger.core.v3:swagger-annotations',
             'org.webjars:webjars-locator-core',
+            'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.1.0',
             [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-classic-core', version: '3.9.1.1'],
             [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-classic-extensions', version: '3.9.1-GA'],
             [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-classic-extensions-scripting', version: '3.9.1-GA'],

@@ -16,5 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-rootProject.projectDir = new File(settingsDir, "./fineract-provider")
-rootProject.name="fineract-provider"
+rootProject.name="fineract"
+include ':fineract-provider'
+include ':fineract-client'
