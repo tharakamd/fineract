@@ -39,6 +39,13 @@ buildscript {
     repositories {
         jcenter()
         maven { url "https://plugins.gradle.org/m2/" }
+        maven {
+            url "http://nexus.pentaho.org/content/repositories/pentaho-public-release-repos/"
+        }
+        maven {
+            url "http://nexus.pentaho.org/content/repositories/omni/"
+        }
+
     }
 
     dependencies {
@@ -75,6 +82,13 @@ allprojects  {
 
     repositories {
         jcenter()
+        maven {
+            url "http://nexus.pentaho.org/content/repositories/pentaho-public-release-repos/"
+        }
+        maven {
+            url "http://nexus.pentaho.org/content/repositories/omni/"
+        }
+
     }
 
     apply plugin: 'io.spring.dependency-management'
@@ -199,6 +213,22 @@ allprojects  {
                 entry 'json-path'
                 entry 'xml-path'
             }
+            [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-classic-core', version: '3.9.1.1']
+            [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-classic-extensions', version: '3.9.1-GA']
+            [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-classic-extensions-scripting', version: '3.9.1-GA']
+            [group: 'pentaho-reporting-engine', name: 'pentaho-reporting-engine-wizard-core', version: '3.9.1-GA']
+            [group: 'pentaho-report-designer', name: 'pentaho-reporting-engine-wizard-xul', version: '3.9.1-GA']
+
+            [group: 'pentaho-library', name: 'libbase', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libdocbundle', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libfonts', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libformat', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libformula', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libloader', version: '1.2.8']
+            [group: 'pentaho-library',name: 'librepository', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libserializer', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libsparkline', version: '1.2.8']
+            [group: 'pentaho-library',name: 'libxml', version: '1.2.8']
         }
     }
 
@@ -336,6 +366,7 @@ allprojects  {
             "**/git.properties",
             ".mailmap",
         ]
+        failOnError.set(false)
     }
 }
 

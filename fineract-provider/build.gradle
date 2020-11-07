@@ -326,7 +326,7 @@ task deployPentahoReports() {
 
 bootRun {
     jvmArgs = [
-            "-Dspring.output.ansi.enabled=ALWAYS"
+        "-Dspring.output.ansi.enabled=ALWAYS"
     ]
 }
 

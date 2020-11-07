@@ -34,7 +34,10 @@
     <sec:global-method-security
         pre-post-annotations="enabled" />
 
-    <context:component-scan base-package="org.apache.fineract.**">
+    <context:component-scan base-package="org.apache.fineract.**,
+                     org.mifosplatform.infrastructure.report.service,
+                                          org.apache.fineract.batch
+">
         <context:exclude-filter expression="org.springframework.stereotype.Controller"
             type="annotation" />
 
